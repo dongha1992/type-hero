@@ -30,15 +30,17 @@ type test_TSConfig_boolean = Expect<Equal<TSConfig<{ strict: boolean }>, { stric
 ```typescript
 type HttpMethod = "GET" | "POST" | "PATCH" | "DELETE";
 
-type ApiRequest<TData, TMethod extends HttpMethod = "GET"> = {
-	data: TData;
-	method: TMethod;
+type ApiRequest<TData, TMethod extends HttpMethod = 'GET'> = {
+  data: TData;
+  method: TMethod;
 };
+```
 
+```
 type TSConfig<
-	TStrict extends Record<string, boolean> = {
-		strict: true;
-	},
+  TStrict extends Record<string, boolean> = {
+    strict: true;
+  }
 > = TStrict;
 ```
 

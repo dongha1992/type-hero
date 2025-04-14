@@ -1,0 +1,51 @@
+#### url
+
+https://typehero.dev/challenge/default-generic-arguments
+
+
+#### test 
+
+```typescript
+import { Expect, Equal } from 'type-testing';
+
+type test_ApiRequest_explicitPost = Expect<
+  Equal<ApiRequest<string, 'POST'>, { data: string; method: 'POST' }>
+>;
+
+type test_ApiRequest_implicitGet = Expect<
+  Equal<ApiRequest<number>, { data: number; method: 'GET' }>
+>;
+
+type test_TSConfig_default = Expect<Equal<TSConfig, { strict: true }>>;
+
+type test_TSConfig_true = Expect<Equal<TSConfig<{ strict: true }>, { strict: true }>>;
+
+type test_TSConfig_false = Expect<Equal<TSConfig<{ strict: false }>, { strict: false }>>;
+
+type test_TSConfig_boolean = Expect<Equal<TSConfig<{ strict: boolean }>, { strict: boolean }>>;
+```
+
+#### my answer
+
+```typescript
+type HttpMethod = "GET" | "POST" | "PATCH" | "DELETE";
+
+type ApiRequest<TData, TMethod extends HttpMethod = "GET"> = {
+	data: TData;
+	method: TMethod;
+};
+
+type TSConfig<
+	TStrict extends Record<string, boolean> = {
+		strict: true;
+	},
+> = TStrict;
+```
+
+#### thought 
+
+```ApiRequest``` 작성은 간단했다. data는 제네릭으로 열려있어야 하고 method는 HttpMethod만 받아야 하니 extends를 한다. 그리고 기본값으로 "GET"을 했다.
+```TSConfig```는 문제는 이해하기 살짝 어려웠는데 그냥 ```example<T> = T``` 에서 기본값을 추가하고 { strict : true / false } 니까 ```Record<string, boolean>``` 했다.
+
+
+

@@ -1,0 +1,86 @@
+#### problem
+
+https://typehero.dev/challenge/awaited/solutions/487
+
+
+#### test 
+
+```typescript
+import type { Equal, Expect } from '@type-challenges/utils'
+
+type X = Promise<string>
+type Y = Promise<{ field: number }>
+type Z = Promise<Promise<string | number>>
+type Z1 = Promise<Promise<Promise<string | boolean>>>
+type T = { then: (onfulfilled: (arg: number) => any) => any }
+
+type cases = [
+  Expect<Equal<MyAwaited<X>, string>>,
+  Expect<Equal<MyAwaited<Y>, { field: number }>>,
+  Expect<Equal<MyAwaited<Z>, string | number>>,
+  Expect<Equal<MyAwaited<Z1>, string | boolean>>,
+  Expect<Equal<MyAwaited<T>, number>>,
+]
+```
+
+#### my answer
+
+Awaited는 두 가지 방식으로 풀이가 가능하다. 
+
+**1. Awaited 키워드**
+
+```typescript
+type MyAwaited<T> = Awaited<T>
+```
+
+두 번째는 infer를 활용한 방법이다.
+
+**2. infer**
+
+먼저 Promise 라면 U를 추론하는 infer를 만든다.
+
+```typescript
+type MyAwaited<T> = T extends Promise<infer U> 
+ ? U 
+ : never;
+```
+
+하지만 아직 아래 케이스들(promise like, 중첩 promise)를 해결하지 못한다. 
+
+```typescript
+type Z = Promise<Promise<string | number>>
+type Z1 = Promise<Promise<Promise<string | boolean>>>
+type T = { then: (onfulfilled: (arg: number) => any) => any }
+```
+
+```MyAwaited```를 조금 더 수정해보자
+
+```typescript
+// 먼저 Promise 라면 U를 추론하는 infer를 만든다.
+
+type MyAwaited<T> = T extends Promise<infer U>
+  ? U extends Promise<any>
+    ? MyAwaited<U>
+    : U
+  : never;
+```
+재귀로 promise일 경우, MyAwaited를 타도록 했다. 이제 중첩 promise도 테스트에 통과한다. 마지막으로 promise like 경우를 해결하지 위해 promise 키워드 대신 promiseLike를 사용한다. 
+
+```typescript
+// 먼저 Promise 라면 U를 추론하는 infer를 만든다.
+
+type MyAwaited<T> = T extends PromiseLike<infer U>
+  ? U extends PromiseLike<any>
+    ? MyAwaited<U>
+    : U
+  : never;
+```
+
+
+#### thought 
+
+```promise``` 객체를 unwrapped 하는 타입을 만들어주면 된다. 가장 간단하게는 ```Awaited``` 키워드로 해결할 수 있다.
+
+```infer```로도 해결할 수 있는데, 처음엔 생각을 못 했다가(그냥 막연하게 promise인지 아닌지만 구별하게 extends 정도) 다른 사람 풀이 참고했다. 타입스크립트에서 재귀적인 부분은 아직 생각하지 좀 어렵다 
+
+

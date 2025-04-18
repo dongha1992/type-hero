@@ -1,0 +1,76 @@
+#### problem
+
+https://typehero.dev/challenge/pick
+
+
+#### challenge
+
+```typescript
+type MyPick<T, K> = unknown
+```
+
+#### test 
+
+```typescript
+interface Pokemon {
+  name: string;
+  type: string;
+  hitPoints: number;
+  stage: string;
+  evolutionStage: number;
+  attacks: string[];
+  weakness: string;
+  resilience: string;
+}
+
+const pickYourPokemon = (
+  pokemon: MyPick<Pokemon, 'name' | 'type'>
+) => {
+  const { type, name } = pokemon;
+  return `You picked the ${type}-type Pokemon ${name}!`
+}
+
+const pikachu = {
+  name: 'Pikachu',
+  type: 'Electric',
+}
+
+console.log(pickYourPokemon(pikachu))
+// => `You picked the Electric-type Pokemon Pikachu!`
+
+/** Selecting an invalid property should be an error. */
+const pokemonAttacks = (
+  // @ts-expect-error
+  pokemon: MyPick<Pokemon, 'attacks' | 'age'>
+) => {
+  return 'Oops! WE ';
+}
+
+/** It's also totally fine to select a single property */
+const recallPokemon = (pokemon: MyPick<Pokemon, 'name'>) => {
+  return `You recalled ${pokemon.name}!`
+}
+```
+
+#### my answer
+
+빌트인 유틸인 ```Pick``` 을 직접 구현하는 문제다. ```Pick```이 성립하기 위해선 두 번째 인자로 들어오는 키가 첫 번째 인자에 있어야 한다.
+
+```typescript
+type MyPick<T, K extends keyof T> = {}
+```
+
+```extends keyof```로 ```K```를 제한해준다. 그리고 ```K``` 를 순회해야 하고 원본 객체(T)에서 Pick할 요소를 가져오면 된다.
+
+```typescript
+type MyPick<T, K extends keyof T> = {
+  [P in K] : T[P] 
+}
+```
+
+
+
+
+#### thought 
+
+```K extends keyof T```를 생각해 내는데 오래 걸렸다. 

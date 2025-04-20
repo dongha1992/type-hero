@@ -1,0 +1,107 @@
+#### [All](https://typehero.dev/challenge/all) 
+
+Returns true if all elements of the list are equal to the second parameter passed in, false if there are any mismatches.
+
+For example:
+
+```typescript
+type Test1 = [1, 1, 1]
+type Test2 = [1, 1, 2]
+
+type Todo = All<Test1, 1> // should be same as true
+type Todo2 = All<Test2, 1> // should be same as false
+```
+
+#### challenge
+```typescript
+type All = unknown
+```
+
+#### test 
+
+```typescript
+import type { Equal, Expect } from '@type-challenges/utils'
+
+type cases = [
+  Expect<Equal<All<[1, 1, 1], 1>, true>>,
+  Expect<Equal<All<[1, 1, 2], 1>, false>>,
+  Expect<Equal<All<['1', '1', '1'], '1'>, true>>,
+  Expect<Equal<All<['1', '1', '1'], 1>, false>>,
+  Expect<Equal<All<[number, number, number], number>, true>>,
+  Expect<Equal<All<[number, number, string], number>, false>>,
+  Expect<Equal<All<[null, null, null], null>, true>>,
+  Expect<Equal<All<[[1], [1], [1]], [1]>, true>>,
+  Expect<Equal<All<[{}, {}, {}], {}>, true>>,
+  Expect<Equal<All<[never], never>, true>>,
+  Expect<Equal<All<[any], any>, true>>,
+  Expect<Equal<All<[unknown], unknown>, true>>,
+  Expect<Equal<All<[any], unknown>, false>>,
+  Expect<Equal<All<[unknown], any>, false>>,
+  Expect<Equal<All<[1, 1, 2], 1 | 2>, false>>,
+]
+```
+
+#### my answer
+
+js 메서드로 치면, ```every```와 같은 역할의 타입을 구현하는 것. 튜플에 모든 요소와 두 번째 인자가 일치하면 true, 아니면 false
+
+재귀로 풀기엔 머리가 안 돌아가서 튜플를 순회하면서 각 요소를 ```Equal```로 검사하는 방법을 생각했다.
+
+먼저 ```Equal```를 만들어 준다. 
+
+```typescript
+type Equal<X, Y> = 
+  (<T>() => T extends X ? 1 : 2) extends 
+  (<T>() => T extends Y ? 1 : 2)
+    ? true
+    : false;
+```
+
+```Equal```은 js로 치면 ```===``` 비교와 같이 엄격한 비교를 하는 타입이다. 
+이제 튜플을 순회한다.
+
+```typescript
+
+type All<T extends unknown[], U> = {
+ [K in keyof T]: unknown
+}
+
+```
+이제 ```Equal<T[K], U>```로 배열 각 요소와 ```U```를 비교한다.
+
+```typescript
+
+type All<T extends unknown[], U> = {
+ [K in keyof T]: Equal<T[K], U>
+}
+
+```
+
+반환값이 튜플이므로 ```[number]``` 인덱스 접근 타입을 통해 튜플을 유니언으로 변경한다.
+
+```typescript
+
+type All<T extends unknown[], U> = {
+ [K in keyof T]: Equal<T[K], U>
+}[number]
+
+```
+
+이제 반환된 유니언 타입이 모두 true인지 ```extends```로 검사해주면 된다.
+
+```typescript
+
+type All<T extends unknown[], U> = {
+ [K in keyof T]: Equal<T[K], U>
+}[number] extends true : true : false
+
+```
+
+
+#### thought 
+
+```[number] extends true ? true : false``` 이 부분이 생각 나지 않아 되게 오래 걸렸음. 사실 맞는 방법인지 잘 모르겠다. 
+
+튜플의 ```keyof```는 숫자 인덱스 외에도 length, push 등의 메서드 키를 포함하는 것과
+
+반환 타입이 true | true | ... 일 때, true로 단순화되는 것 

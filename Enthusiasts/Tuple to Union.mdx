@@ -1,0 +1,59 @@
+#### [Tuple to Union](https://typehero.dev/challenge/tuple-to-union) 
+
+Implement a generic TupleToUnion<T> which covers the values of a tuple to its values union.
+
+For example
+
+```typescript
+type Arr = ['1', '2', '3']
+
+type Test = TupleToUnion<Arr> // expected to be '1' | '2' | '3'
+```
+
+#### challenge
+```typescript
+type TupleToUnion<T> = unknown
+```
+
+#### test 
+
+```typescript
+import type { Equal, Expect } from '@type-challenges/utils'
+type cases = [
+  Expect<Equal<TupleToUnion<[123, '456', true]>, 123 | '456' | true>>,
+  Expect<Equal<TupleToUnion<[123]>, 123>>,
+]
+```
+
+#### my answer
+
+튜플을 유니언으로 변경해야 한다. 간단하게는 [number]를 사용하면 된다.
+
+```typescript
+type TupleToUnion<T extends unknown[]> = T[number]
+```
+
+keyof 해도 되는데 이건 문제 의도랑은 안 맞는 거 같다.
+
+#### thought 
+
+다른 사람 풀이를 보니 재귀를 사용한 게 있어서 정리한다. 
+
+아이디어는 튜플의 요소를 하나씩 재귀로 꺼내어 유니언으로 만드는 것
+
+```typescript
+type TupleToUnion<T> = T extends [infer F, ...infer R] ? never : never
+```
+
+T가 분리 가능한 튜플인지 확인하는 extends를 먼저 작성한 뒤
+
+```typescript
+type TupleToUnion<T extends any[]> = T extends [infer F, ...infer R] ? F : never;
+```
+이렇게 반환하면 튜플 요소를 하나만 반환한다. 재귀를 돌아야 한다.
+
+```typescript
+type TupleToUnion<T extends any[]> = T extends [infer F, ...infer R] ? F | TupleToUnion<R> : never;
+```
+
+각 튜플 요소를 돌면서 유니언으로 변환한다.

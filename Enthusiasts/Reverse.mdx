@@ -1,0 +1,46 @@
+#### [Reverse](https://typehero.dev/challenge/reverse) 
+
+Implement the type version of Array.reverse
+
+For example:
+
+```typescript
+type a = Reverse<['a', 'b']> // ['b', 'a']
+type b = Reverse<['a', 'b', 'c']> // ['c', 'b', 'a']
+```
+
+#### challenge
+```typescript
+type Reverse = unknown
+```
+
+#### test 
+
+```typescript
+import type { Equal, Expect } from '@type-challenges/utils'
+
+type cases = [
+  Expect<Equal<Reverse<[]>, []>>,
+  Expect<Equal<Reverse<['a', 'b']>, ['b', 'a']>>,
+  Expect<Equal<Reverse<['a', 'b', 'c']>, ['c', 'b', 'a']>>,
+]
+
+type errors = [
+  // @ts-expect-error
+  Reverse<'string'>,
+  // @ts-expect-error
+  Reverse<{ key: 'value' }>,
+]
+```
+
+#### my answer
+
+js 메서드로 치면, ```reverse```와 같은 역할의 타입을 구현하는 것. infer를 사용해서 첫 번째 요소부터 위치를 변경하면 된다.
+
+
+```typescript
+type Reverse<T extends unknown[]> = T extends [infer R, ...infer Rest] ? [...Reverse<Rest>, R] : [];
+```
+
+#### thought 
+

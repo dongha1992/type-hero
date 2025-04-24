@@ -1,0 +1,61 @@
+#### [PickByType](https://typehero.dev/challenge/pickbytype) 
+
+From T, pick a set of properties whose type are assignable to U.
+
+For Example
+
+```typescript
+type OnlyBoolean = PickByType<{
+  name: string
+  count: number
+  isReadonly: boolean
+  isEnable: boolean
+}, boolean> // { isReadonly: boolean; isEnable: boolean; }
+```
+
+#### challenge
+```typescript
+type PickByType<T, U>  = unknown
+```
+
+#### test 
+
+```typescript
+import type { Equal, Expect } from '@type-challenges/utils'
+
+interface Model {
+  name: string
+  count: number
+  isReadonly: boolean
+  isEnable: boolean
+}
+
+type cases = [
+  Expect<Equal<PickByType<Model, boolean>, { isReadonly: boolean, isEnable: boolean }>>,
+  Expect<Equal<PickByType<Model, string>, { name: string }>>,
+  Expect<Equal<PickByType<Model, number>, { count: number }>>,
+]
+```
+
+#### my answer
+
+밸류의 타입에 해당하는 요소만 pick하는 커스텀 픽이다.
+
+```typescript
+type PickByType<T, U> = {
+ [K in keyof T]: T[K]
+}
+```
+
+먼저 키밸류를 그대로 리맵핑해준다. 그리고 ```T[K]```를 활용하여 주어진 타입(```U```)의 서브타입인지 확인하면 된다.
+
+```typescript
+type PickByType<T, U> = {
+ [K in keyof T
+   as T[K] extends U ? K : never]: T[K]
+}
+```
+
+조건부 필터링을 통해 원하는 ```K```만 남긴다.
+
+#### thought 

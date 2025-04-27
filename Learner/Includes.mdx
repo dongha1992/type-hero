@@ -1,0 +1,97 @@
+#### [Includes](https://typehero.dev/challenge/includes) 
+
+Implement the JavaScript Array.includes function in the type system. A type takes the two arguments. The output should be a boolean true or false.
+
+For example:
+
+```typescript
+type isPillarMen = Includes<['Kars', 'Esidisi', 'Wamuu', 'Santana'], 'Dio'> // expected to be `false`
+```
+
+#### challenge
+```typescript
+type Includes<T> = unknown
+```
+
+#### test 
+
+```typescript
+import type { Equal, Expect } from '@type-challenges/utils'
+
+type cases = [
+  Expect<Equal<Includes<['Kars', 'Esidisi', 'Wamuu', 'Santana'], 'Kars'>, true>>,
+  Expect<Equal<Includes<['Kars', 'Esidisi', 'Wamuu', 'Santana'], 'Dio'>, false>>,
+  Expect<Equal<Includes<[1, 2, 3, 5, 6, 7], 7>, true>>,
+  Expect<Equal<Includes<[1, 2, 3, 5, 6, 7], 4>, false>>,
+  Expect<Equal<Includes<[1, 2, 3], 2>, true>>,
+  Expect<Equal<Includes<[1, 2, 3], 1>, true>>,
+  Expect<Equal<Includes<[{}], { a: 'A' }>, false>>,
+  Expect<Equal<Includes<[boolean, 2, 3, 5, 6, 7], false>, false>>,
+  Expect<Equal<Includes<[true, 2, 3, 5, 6, 7], boolean>, false>>,
+  Expect<Equal<Includes<[false, 2, 3, 5, 6, 7], false>, true>>,
+  Expect<Equal<Includes<[{ a: 'A' }], { readonly a: 'A' }>, false>>,
+  Expect<Equal<Includes<[{ readonly a: 'A' }], { a: 'A' }>, false>>,
+  Expect<Equal<Includes<[1], 1 | 2>, false>>,
+  Expect<Equal<Includes<[1 | 2], 1>, false>>,
+  Expect<Equal<Includes<[null], undefined>, false>>,
+  Expect<Equal<Includes<[undefined], null>, false>>,
+]
+```
+
+#### my answer
+
+Includes 문제는 JS의 메서드 ```includes```와 동일한 기능을 수행하는 타입을 구현하는 것. 첫 번째 인자로 들어온 튜플에서 두 번째 인자로 들어온 요소가 있나 확인하면 된다. 
+
+```typescript
+type Includes<T extends readonly unknown[], U> = {
+ [K in keyof T]: T[K];
+};
+```
+
+T를 순회하면서 ```T[K]```와 ```U```가 같은지 비교를 해야한다. Eqaul 타입을 구현
+
+```typescript
+type Equal<X, Y> =
+ (<T>() => T extends X ? 1 : 2) extends
+ (<T>() => T extends Y ? 1 : 2) ? true : false;
+```
+
+```typescript
+type Includes<T extends readonly unknown[], U> = {
+ [K in keyof T]: Equal<T[K], U>;
+};
+```
+
+이제 반환값은 ```{0: false, 1: true, 2: false}``` 이렇게 인덱스를 포함한 객체 형식이다. [number]로 인덱싱하며 모든 값을 가져온다. 
+
+```typescript
+type Includes<T extends readonly unknown[], U> = {
+ [K in keyof T]: Equal<T[K], U>;
+}[number]
+```
+
+이제 각 값들이 true인지 false인지 확인하면된다. includes의 경우, 하나라도 속하면 true이기 때문에 ```extends false ? false ? true```로 표현 가능하다. 
+
+```typescript
+type Includes<T extends readonly unknown[], U> = {
+ [K in keyof T]: Equal<T[K], U>;
+}[number] extends false
+ ? false
+ : true;
+```
+
+
+
+#### thought 
+
+예전에 풀었던 All과 비슷해서 다른 풀이는 생각 안 했는데, 다른 사람 풀이를 보니 재귀로도 가능하다. 
+
+
+```typescript
+type Includes<T extends any[], U> = T extends [infer First, ...infer Rest]
+ ? Equal<U, First> extends true
+   ? true
+   : Includes<Rest, U>
+: false
+```
+infer로 하나씩 비교해보고 ```Includes<Rest, U>```로 재귀를 탄다. 아직 재귀는 직관적으로 떠오르진 않는듯...

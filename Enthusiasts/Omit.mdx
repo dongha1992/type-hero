@@ -1,0 +1,96 @@
+#### [Omit](https://typehero.dev/challenge/omit) 
+
+Implement the built-in Omit<T, K> generic without using it.
+
+Constructs a type by picking all properties from T and then removing K
+
+For example
+
+```typescript
+interface Todo {
+  title: string
+  description: string
+  completed: boolean
+}
+
+type TodoPreview = MyOmit<Todo, 'description' | 'title'>
+
+const todo: TodoPreview = {
+  completed: false,
+}
+```
+
+#### challenge
+```typescript
+type MyOmit<T, K> = unknown
+```
+
+#### test 
+
+```typescript
+import type { Equal, Expect } from '@type-challenges/utils'
+
+type cases = [
+  Expect<Equal<Expected1, MyOmit<Todo, 'description'>>>,
+  Expect<Equal<Expected2, MyOmit<Todo, 'description' | 'completed'>>>,
+  Expect<Equal<Expected3, MyOmit<Todo1, 'description' | 'completed'>>>,
+]
+
+// @ts-expect-error
+type error = MyOmit<Todo, 'description' | 'invalid'>
+
+interface Todo {
+  title: string
+  description: string
+  completed: boolean
+}
+
+interface Todo1 {
+  readonly title: string
+  description: string
+  completed: boolean
+}
+
+interface Expected1 {
+  title: string
+  completed: boolean
+}
+
+interface Expected2 {
+  title: string
+}
+
+interface Expected3 {
+  readonly title: string
+}
+```
+
+#### my answer
+
+두 번째 인자로 들어온 유니언 타입들만 제외해야 한다. 
+
+```typescript
+type MyOmit<T, K extends keyof T> = unknown
+```
+
+K는 T의 keyof 여야 하므로 extends를 먼저 한다. 
+
+```typescript
+type MyOmit<T, K extends keyof T> = {
+ [U in keyof T]: T[U]
+}
+```
+
+리매핑을 해준 뒤 이제 ```K```일 때만 never로 제외하면 된다. 
+
+```typescript
+type MyOmit<T, K extends keyof T> = {
+ [U in keyof T
+   as U extends K ? never : U : T[U]
+}
+```
+U가 K의 서브타입이면 never 아니라면 그대로 U를 as로 적용한다. 
+
+#### thought
+
+
